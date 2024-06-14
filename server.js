@@ -1,48 +1,25 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const { default: mongoose } = require('mongoose');
 const app = express();
 const PORT = 8000;
-
+const userRouter= require('./router/userRouter');
+const contentRouter = require('./router/contentRouter')
 app.use(bodyParser.json());
 app.use(cors());
-
-const users = [];
-
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
-
-  if (user) {
-    res.json({ success: true, message: 'Login successful' });
-  } else {
-    res.status(401).json({ success: false, message: 'Invalid username or password' });
-  }
-});
-
-app.post('/register', (req, res) => {
-  const { firstname, lastname, email, password, height, weight } = req.body;
-
-  const user = {
-    username: email, 
-    firstname,
-    lastname,
-    email,
-    password,
-    height,
-    weight
-  };
-
  
-  users.push(user);
+try{
+  mongoose.connect('mongodb+srv://pp3662504:Prakash%4012@cluster0.kztmo7u.mongodb.net/dietback')
+  .then(() => console.log('MongoDB connected'))
+  .catch((error) => console.log('Error:',error.message));
+}
+catch(error){
+  console.log('Error:',error.message);
+}
 
-  const { password: _, ...userData } = user;
-  res.json({ success: true, user: userData });
-});
-
-app.get('/users', (req, res) => {
-  res.status(200).json(users);
-});
+app.use('/api/user',userRouter)
+app.use('/api/content',contentRouter)
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
